@@ -1,135 +1,107 @@
 "use client";
 
-import { useAppStore } from '@/lib/store';
-import { SparklesIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { BarChart3, BrainCircuitIcon, TrendingUpIcon, TrendingDownIcon } from 'lucide-react';
+import { analyzeCoinsWithAI, type CoinAnalysis } from '@/lib/zora';
 
-export default function AIInsights() {
-  const { coinAnalyses } = useAppStore();
-  
-  // Get top recommendations (buy signals)
-  const topRecommendations = coinAnalyses
-    .filter(analysis => analysis.buySignal)
-    .sort((a, b) => b.trendScore - a.trendScore)
-    .slice(0, 3);
-  
+export function AIInsights() {
+  const [insights, setInsights] = useState<CoinAnalysis[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
+
+  useEffect(() => {
+    const fetchInsights = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Normally we would use wallet-connected data, but for demo use placeholder addresses
+        const mockAddresses = [
+          '0x1234567890123456789012345678901234567890',
+          '0x22633dbf3c5fcc2c0d3301889abc2a571dad7db1'
+        ];
+        
+        const analysisResults = await analyzeCoinsWithAI(mockAddresses);
+        setInsights(analysisResults);
+      } catch (error) {
+        console.error('Error fetching AI insights:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Only load insights if we have a wallet or in demo mode
+    fetchInsights();
+  }, []);
+
   return (
-    <div className="bg-card rounded-lg shadow-sm p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold flex items-center">
-          <SparklesIcon className="h-5 w-5 mr-2 text-primary" />
-          AI Insights
-        </h2>
+    <div>
+      <div className="flex items-center space-x-2 mb-4">
+        <BrainCircuitIcon className="h-5 w-5 text-gray-400" />
+        <h2 className="text-xl font-bold">AI Insights</h2>
       </div>
       
-      {coinAnalyses.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
-          <p>Loading AI insights...</p>
-          <div className="mt-4 animate-pulse flex space-x-4">
-            <div className="h-2.5 w-24 bg-primary/20 rounded-full"></div>
-            <div className="h-2.5 w-16 bg-primary/20 rounded-full"></div>
-            <div className="h-2.5 w-20 bg-primary/20 rounded-full"></div>
+      {isLoading ? (
+        <div className="animate-pulse bg-gray-900 border border-gray-800 rounded-md p-6 h-64">
+          <div className="h-6 bg-gray-800 rounded w-1/3 mb-4"></div>
+          <div className="h-8 bg-gray-800 rounded w-2/3 mb-6"></div>
+          <div className="h-4 bg-gray-800 rounded w-full mb-2"></div>
+          <div className="h-4 bg-gray-800 rounded w-5/6"></div>
+        </div>
+      ) : !isWalletConnected ? (
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-6 h-64">
+          <div className="text-sm text-gray-400 mb-2">Top Recommendation</div>
+          <div className="text-lg font-bold mb-4">Connect wallet to see personalized insights</div>
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-400">Powered by TensorFlow.js analysis</div>
           </div>
         </div>
       ) : (
-        <div className="space-y-4">
-          <div className="p-3 bg-primary/5 rounded-md">
-            <h3 className="font-medium mb-2">Market Sentiment</h3>
-            <div className="flex items-center">
-              <div className="w-full bg-muted rounded-full h-2.5">
-                <div
-                  className="bg-primary h-2.5 rounded-full"
-                  style={{ 
-                    width: `${calculateOverallSentiment(coinAnalyses) * 50 + 50}%` 
-                  }}
-                ></div>
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-6 h-64">
+          {insights.length > 0 ? (
+            <>
+              <div className="text-sm text-gray-400 mb-2">Top Recommendation</div>
+              <div className="flex items-center space-x-2 mb-1">
+                {insights[0].recommendation === 'Buy' && (
+                  <TrendingUpIcon className="h-5 w-5 text-green-500" />
+                )}
+                {insights[0].recommendation === 'Sell' && (
+                  <TrendingDownIcon className="h-5 w-5 text-red-500" />
+                )}
+                <div className="text-lg font-bold">
+                  {insights[0].recommendation} {insights[0].coinAddress.substring(0, 6)}...
+                </div>
               </div>
-              <span className="ml-3 text-sm font-medium">
-                {getSentimentLabel(calculateOverallSentiment(coinAnalyses))}
-              </span>
-            </div>
-          </div>
-          
-          {topRecommendations.length > 0 && (
-            <div>
-              <h3 className="font-medium mb-2">Top Opportunities</h3>
-              {topRecommendations.map((analysis, index) => (
-                <div key={analysis.coinAddress} className="p-3 hover:bg-muted/50 rounded-md flex items-center justify-between transition-colors">
-                  <div className="flex items-center">
-                    <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center mr-3 text-green-600 text-xs font-bold">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <p className="font-medium">{getCoinSymbol(analysis.coinAddress)}</p>
-                      <p className="text-xs text-muted-foreground">Trend score: {analysis.trendScore.toFixed(2)}</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <p className="text-sm font-medium text-green-500">Buy</p>
-                    <p className="text-xs text-muted-foreground">Confidence: {getConfidenceLevel(analysis.trendScore)}</p>
+              <div className="text-sm text-gray-400 mb-4">
+                Confidence score: {(Math.abs(insights[0].trendScore) * 100).toFixed(0)}%
+              </div>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <div className="text-xs text-gray-400">Sentiment</div>
+                  <div className="text-sm">
+                    {insights[0].sentimentScore > 0 ? 'Positive' : 'Negative'} 
+                    ({(insights[0].sentimentScore * 100).toFixed(0)}%)
                   </div>
                 </div>
-              ))}
-            </div>
+                <div>
+                  <div className="text-xs text-gray-400">Volume Growth</div>
+                  <div className="text-sm">
+                    {insights[0].volumeGrowth > 0 ? '+' : ''}
+                    {(insights[0].volumeGrowth * 100).toFixed(1)}%
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="text-lg font-bold mb-4">No AI insights available yet</div>
+              <div className="text-sm text-gray-400">Check back soon for personalized recommendations</div>
+            </>
           )}
-          
-          <div className="p-3 bg-primary/5 rounded-md">
-            <h3 className="font-medium mb-2">AI Trading Tip</h3>
-            <p className="text-sm text-muted-foreground">
-              {generateTradingTip(coinAnalyses)}
-            </p>
+          <div className="mt-auto pt-2 text-xs text-gray-400">
+            Powered by TensorFlow.js analysis
           </div>
         </div>
       )}
-      
-      <div className="mt-4 pt-2 border-t border-border">
-        <button className="w-full text-center text-sm text-primary hover:underline">
-          View Detailed Analysis
-        </button>
-      </div>
     </div>
   );
-}
-
-// Helper functions
-function calculateOverallSentiment(analyses: any[]): number {
-  if (analyses.length === 0) return 0;
-  
-  const sentimentSum = analyses.reduce((sum, analysis) => sum + analysis.sentimentScore, 0);
-  return sentimentSum / analyses.length;
-}
-
-function getSentimentLabel(sentiment: number): string {
-  if (sentiment > 0.5) return 'Bullish';
-  if (sentiment > 0.2) return 'Slightly Bullish';
-  if (sentiment > -0.2) return 'Neutral';
-  if (sentiment > -0.5) return 'Slightly Bearish';
-  return 'Bearish';
-}
-
-function getCoinSymbol(address: string): string {
-  // In a real implementation, we would fetch this from a cache or store
-  // For now, just return a mock symbol based on the address
-  return `$${address.substring(2, 6).toUpperCase()}`;
-}
-
-function getConfidenceLevel(score: number): string {
-  const absScore = Math.abs(score);
-  if (absScore > 0.7) return 'High';
-  if (absScore > 0.4) return 'Medium';
-  return 'Low';
-}
-
-function generateTradingTip(analyses: any[]): string {
-  // In a real implementation, this would be more sophisticated
-  const tips = [
-    "Consider diversifying your portfolio with a mix of established and emerging coins.",
-    "Watch for coins with positive sentiment but low price volatility for safer investments.",
-    "Market shows increased activity - consider increasing your position in trending coins.",
-    "Recent volatility suggests cautious trading and smaller position sizes.",
-    "Look for coins with growing social engagement as potential early opportunities.",
-  ];
-  
-  // Pick a tip based on some analysis of the data
-  const randomIndex = Math.floor(Math.random() * tips.length);
-  return tips[randomIndex];
 } 

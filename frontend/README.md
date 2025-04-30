@@ -33,9 +33,9 @@ This is the frontend application for ZoraSage, an AI-powered trading and creatio
 
 Run the development server:
 
-```
-npm run dev
-```
+   ```
+   npm run dev
+   ```
 
 Visit [http://localhost:3000](http://localhost:3000) to view the application.
 

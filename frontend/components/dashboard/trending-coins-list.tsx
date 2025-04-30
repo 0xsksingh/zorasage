@@ -1,127 +1,126 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useAppStore } from '@/lib/store';
-import { getCoinDetails } from '@/lib/zora';
-import { ArrowUpIcon, ArrowDownIcon, TrendingUpIcon } from 'lucide-react';
+import { TrendingUpIcon, ArrowUpIcon, ArrowDownIcon } from 'lucide-react';
+import { getTrendingCoins } from '@/lib/zora';
 
-interface CoinDetails {
+interface TrendingCoin {
   address: string;
   name: string;
   symbol: string;
-  imageUrl?: string;
-  priceChange24h: number;
-  currentPrice: number;
+  price: string;
+  priceChange24h: string;
+  volume24h: string;
 }
 
-export default function TrendingCoinsList() {
-  const { trendingCoins } = useAppStore();
-  const [coinDetails, setCoinDetails] = useState<CoinDetails[]>([]);
-  const [loading, setLoading] = useState(true);
-  
+export function TrendingCoinsList() {
+  const [trendingCoins, setTrendingCoins] = useState<TrendingCoin[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    const fetchCoinDetails = async () => {
-      if (trendingCoins.length === 0) return;
-      
-      setLoading(true);
+    const fetchTrendingCoins = async () => {
       try {
-        const details: CoinDetails[] = [];
-        
-        for (const address of trendingCoins) {
-          try {
-            const response = await getCoinDetails({ coinAddress: address });
-            if (response?.data) {
-              details.push({
-                address,
-                name: response.data.name || 'Unknown',
-                symbol: response.data.symbol || '???',
-                imageUrl: response.data.image || undefined,
-                // Mock data for now - would be replaced with actual price data
-                priceChange24h: Math.random() * 20 - 10, // -10% to +10%
-                currentPrice: Math.random() * 10, // 0 to 10
-              });
-            }
-          } catch (error) {
-            console.error(`Error fetching details for coin ${address}:`, error);
-          }
+        setIsLoading(true);
+        const response = await getTrendingCoins({ limit: 5 });
+        if (response && response.coins) {
+          setTrendingCoins(response.coins);
         }
-        
-        setCoinDetails(details);
       } catch (error) {
-        console.error('Error fetching coin details:', error);
+        console.error('Error fetching trending coins:', error);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
+
+    fetchTrendingCoins();
+  }, []);
+
+  // Helper function to format price changes
+  const formatPriceChange = (change: string) => {
+    // Remove + or - and % from the string to get the numeric value
+    const value = parseFloat(change.replace(/[+\-%]/g, ''));
+    const isPositive = !change.includes('-');
     
-    fetchCoinDetails();
-  }, [trendingCoins]);
-  
+    return {
+      value,
+      isPositive,
+      formatted: change
+    };
+  };
+
   return (
-    <div className="bg-card rounded-lg shadow-sm p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold flex items-center">
-          <TrendingUpIcon className="h-5 w-5 mr-2 text-primary" />
-          Trending Coins
-        </h2>
+    <div>
+      <div className="flex items-center space-x-2 mb-4">
+        <TrendingUpIcon className="h-5 w-5 text-gray-400" />
+        <h2 className="text-xl font-bold">Trending Coins</h2>
       </div>
       
-      {loading ? (
-        <div className="flex justify-center items-center h-48">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {coinDetails.map((coin) => (
-            <div key={coin.address} className="p-3 hover:bg-muted/50 rounded-md flex items-center justify-between transition-colors">
-              <div className="flex items-center">
-                {coin.imageUrl ? (
-                  <img 
-                    src={coin.imageUrl} 
-                    alt={coin.name} 
-                    className="w-8 h-8 rounded-full mr-3"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mr-3">
-                    {coin.symbol.substring(0, 1)}
+      {isLoading ? (
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
+          <div className="animate-pulse space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center justify-between py-2">
+                <div className="flex items-center">
+                  <div className="h-10 w-10 rounded-full bg-gray-800"></div>
+                  <div className="ml-3">
+                    <div className="h-4 w-24 bg-gray-800 rounded"></div>
+                    <div className="h-3 w-16 bg-gray-800 rounded mt-2"></div>
                   </div>
-                )}
-                <div>
-                  <p className="font-medium">{coin.name}</p>
-                  <p className="text-sm text-muted-foreground">${coin.symbol}</p>
+                </div>
+                <div className="flex flex-col items-end">
+                  <div className="h-4 w-16 bg-gray-800 rounded"></div>
+                  <div className="h-3 w-12 bg-gray-800 rounded mt-2"></div>
                 </div>
               </div>
-              <div className="flex flex-col items-end">
-                <p className="font-medium">${coin.currentPrice.toFixed(2)}</p>
-                <p className={`text-sm flex items-center ${
-                  coin.priceChange24h >= 0 
-                    ? 'text-green-500' 
-                    : 'text-red-500'
-                }`}>
-                  {coin.priceChange24h >= 0 
-                    ? <ArrowUpIcon className="h-3 w-3 mr-1" /> 
-                    : <ArrowDownIcon className="h-3 w-3 mr-1" />
-                  }
-                  {Math.abs(coin.priceChange24h).toFixed(2)}%
-                </p>
-              </div>
-            </div>
-          ))}
-          
-          {coinDetails.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
-              <p>No trending coins found</p>
-              <p className="text-sm">Check back later for updates</p>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-4 divide-y divide-gray-800">
+          {trendingCoins.length > 0 ? (
+            trendingCoins.map((coin) => {
+              const priceChange = formatPriceChange(coin.priceChange24h);
+              
+              return (
+                <div key={coin.address} className="flex items-center justify-between py-3">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-sm font-medium">
+                      {coin.symbol.substring(0, 2)}
+                    </div>
+                    <div className="ml-3">
+                      <div className="font-medium">{coin.name}</div>
+                      <div className="text-sm text-gray-400">{coin.symbol}</div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <div className="font-medium">{coin.price}</div>
+                    <div className={`text-sm flex items-center ${
+                      priceChange.isPositive ? 'text-green-500' : 'text-red-500'
+                    }`}>
+                      {priceChange.isPositive ? (
+                        <ArrowUpIcon className="h-3 w-3 mr-1" />
+                      ) : (
+                        <ArrowDownIcon className="h-3 w-3 mr-1" />
+                      )}
+                      {priceChange.formatted}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="py-6 text-center text-gray-400">
+              No trending coins available
             </div>
           )}
+          
+          <div className="pt-3 flex justify-center">
+            <button className="text-blue-500 text-sm hover:underline">
+              View all coins
+            </button>
+          </div>
         </div>
       )}
-      
-      <div className="mt-4 pt-2 border-t border-border">
-        <button className="w-full text-center text-sm text-primary hover:underline">
-          View All Trending Coins
-        </button>
-      </div>
     </div>
   );
 } 

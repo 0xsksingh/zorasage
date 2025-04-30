@@ -1,134 +1,104 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAppStore } from '@/lib/store';
 import { 
-  BarChart3, 
-  Coins, 
-  Home, 
-  LineChart, 
-  MessagesSquare, 
-  Settings, 
-  TrendingUp, 
-  Users 
+  HomeIcon, 
+  LineChartIcon, 
+  WalletIcon, 
+  BrainCircuitIcon, 
+  TrendingUpIcon, 
+  MessagesSquareIcon, 
+  UsersIcon, 
+  SettingsIcon 
 } from 'lucide-react';
-
-interface NavItemProps {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-  isActive: boolean;
-}
-
-const NavItem = ({ href, icon, label, isActive }: NavItemProps) => {
-  const { sidebarOpen } = useAppStore();
-  
-  return (
-    <Link 
-      href={href}
-      className={`flex items-center p-3 my-1 rounded-lg transition-colors ${
-        isActive 
-          ? 'bg-primary/10 text-primary' 
-          : 'text-muted-foreground hover:bg-muted hover:text-primary'
-      }`}
-    >
-      <span className="text-xl">{icon}</span>
-      {sidebarOpen && (
-        <span className="ml-3 font-medium">{label}</span>
-      )}
-    </Link>
-  );
-};
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { sidebarOpen, setSidebarOpen } = useAppStore();
   
   const navItems = [
-    { href: '/', icon: <Home />, label: 'Dashboard' },
-    { href: '/market', icon: <BarChart3 />, label: 'Market' },
-    { href: '/portfolio', icon: <Coins />, label: 'Portfolio' },
-    { href: '/strategies', icon: <LineChart />, label: 'Strategies' },
-    { href: '/trends', icon: <TrendingUp />, label: 'Trends' },
-    { href: '/social', icon: <MessagesSquare />, label: 'Social' },
-    { href: '/creators', icon: <Users />, label: 'Creators' },
-    { href: '/settings', icon: <Settings />, label: 'Settings' },
+    {
+      name: 'Dashboard',
+      href: '/',
+      icon: HomeIcon,
+    },
+    {
+      name: 'Market',
+      href: '/market',
+      icon: LineChartIcon,
+    },
+    {
+      name: 'Portfolio',
+      href: '/portfolio',
+      icon: WalletIcon,
+    },
+    {
+      name: 'Strategies',
+      href: '/strategies',
+      icon: BrainCircuitIcon,
+    },
+    {
+      name: 'Trends',
+      href: '/trends',
+      icon: TrendingUpIcon,
+    },
+    {
+      name: 'Social',
+      href: '/social',
+      icon: MessagesSquareIcon,
+    },
+    {
+      name: 'Creators',
+      href: '/creators',
+      icon: UsersIcon,
+    },
+    {
+      name: 'Settings',
+      href: '/settings',
+      icon: SettingsIcon,
+    },
   ];
-  
+
   return (
-    <aside 
-      className={`fixed inset-y-0 left-0 z-50 transform ${
-        sidebarOpen ? 'w-64' : 'w-20'
-      } bg-card shadow-md transition-all duration-300 ease-in-out`}
-    >
-      <div className="flex flex-col h-full p-4">
-        <div className="flex items-center justify-between mb-8">
-          {sidebarOpen ? (
-            <h2 className="text-2xl font-bold text-primary">ZoraSage</h2>
-          ) : (
-            <h2 className="text-2xl font-bold text-primary">ZS</h2>
-          )}
-          
-          <button 
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-full hover:bg-muted text-muted-foreground"
-          >
-            {sidebarOpen ? (
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="20" 
-                height="20" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              >
-                <path d="m15 18-6-6 6-6" />
-              </svg>
-            ) : (
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="20" 
-                height="20" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              >
-                <path d="m9 18 6-6-6-6" />
-              </svg>
-            )}
-          </button>
-        </div>
-        
-        <nav className="flex-1 space-y-1">
-          {navItems.map((item) => (
-            <NavItem 
-              key={item.href}
-              href={item.href}
-              icon={item.icon}
-              label={item.label}
-              isActive={pathname === item.href}
-            />
-          ))}
-        </nav>
-        
-        <div className="mt-auto pt-4 border-t border-border">
-          <div className={`flex items-center ${sidebarOpen ? 'justify-between' : 'justify-center'}`}>
-            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
-              AI
-            </div>
-            {sidebarOpen && (
-              <span className="text-sm text-muted-foreground">
-                AI Powered
-              </span>
-            )}
+    <div className="w-64 h-screen bg-black border-r border-gray-800 flex flex-col">
+      {/* Logo */}
+      <div className="p-6 pb-2 flex items-center">
+        <h1 className="text-2xl font-bold text-white">ZoraSage</h1>
+      </div>
+      
+      {/* Navigation */}
+      <nav className="mt-6 px-3 flex-1">
+        <ul className="space-y-2">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            
+            return (
+              <li key={item.name}>
+                <Link 
+                  href={item.href}
+                  className={`
+                    flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors
+                    ${isActive 
+                      ? 'bg-gray-800 text-white' 
+                      : 'text-gray-400 hover:text-white hover:bg-gray-800'}
+                  `}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span>{item.name}</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+      
+      {/* AI Footer */}
+      <div className="p-4 border-t border-gray-800 flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <div className="bg-black border border-gray-700 rounded-full h-8 w-8 flex items-center justify-center">
+            <BrainCircuitIcon className="h-4 w-4 text-white" />
           </div>
+          <span className="text-gray-400 text-sm">AI Powered</span>
         </div>
       </div>
-    </aside>
+    </div>
   );
 } 

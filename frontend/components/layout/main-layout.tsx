@@ -1,30 +1,27 @@
 import React from 'react';
-import { useAppStore } from '@/lib/store';
 import { Sidebar } from './sidebar';
 import { Navbar } from './navbar';
 
-interface MainLayoutProps {
+export interface MainLayoutProps {
   children: React.ReactNode;
 }
 
-export function MainLayout({ children }: MainLayoutProps) {
-  const { sidebarOpen } = useAppStore();
-
+export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      {/* Sidebar */}
       <Sidebar />
       
+      {/* Main content */}
       <div className="flex flex-col flex-1 overflow-hidden">
+        {/* Navbar */}
         <Navbar />
         
-        <main className={`flex-1 overflow-y-auto transition-all ${
-          sidebarOpen ? 'ml-64' : 'ml-20'
-        }`}>
-          <div className="container mx-auto py-6 px-4">
-            {children}
-          </div>
+        {/* Content area */}
+        <main className="flex-1 overflow-y-auto p-4">
+          {children}
         </main>
       </div>
     </div>
   );
-} 
+}; 

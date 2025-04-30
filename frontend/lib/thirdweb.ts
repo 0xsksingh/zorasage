@@ -1,6 +1,6 @@
-import { createThirdwebClient, ChainId } from "@thirdweb-dev/sdk";
-import { RSK, RSKTestnet } from "@thirdweb-dev/chains";
-import { ConnectWallet, ThirdwebProvider } from "@thirdweb-dev/react";
+import { createThirdwebClient } from "thirdweb";
+import { base } from "thirdweb/chains";
+import {  ThirdwebProvider } from "thirdweb/react";
 
 // Define the client ID (get this from thirdweb dashboard)
 export const clientId = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "";
@@ -12,11 +12,11 @@ export const client = createThirdwebClient({
 });
 
 // Export supported chains
-export const supportedChains = [RSK, RSKTestnet];
+export const supportedChains = [base];
 
 // Helper to determine if we're on testnet or mainnet
 export const getActiveChain = (chainId?: number) => {
-  if (!chainId) return RSKTestnet;
+  if (!chainId) return base;
   
-  return chainId === 30 ? RSK : RSKTestnet;
+  return base;
 }; 
