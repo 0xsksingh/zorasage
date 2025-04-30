@@ -1,5 +1,6 @@
 import { ThirdwebProvider } from "@thirdweb-dev/react";
 import { ReactNode } from "react";
+import { base } from "viem/chains";
 
 // Rootstock chain IDs
 const ROOTSTOCK_MAINNET = {
@@ -26,7 +27,7 @@ export default function ThirdwebProviderWrapper({ children }: ThirdwebProviderWr
   return (
     <ThirdwebProvider
       clientId={process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID}
-      activeChain={ROOTSTOCK_TESTNET}
+      activeChain={base}
       dAppMeta={{
         name: "RSK TrustID",
         description: "Self-sovereign identity and reputation system built on Rootstock blockchain",
