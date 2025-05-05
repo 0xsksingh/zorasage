@@ -4,6 +4,8 @@
 
 ZoraSage is an AI-driven platform that helps creators maximize their earnings and traders optimize their portfolios in the Zora ecosystem. It combines real-time market analysis, sentiment tracking, and predictive modeling to deliver actionable insights for Zora coin creators and traders.
 
+<img width="357" alt="image" src="https://github.com/user-attachments/assets/c5d5a789-80f8-4591-b108-83afc472a1ae" />
+
 ## Key Features
 
 - **AI Market Analysis**: Advanced algorithms analyze on-chain data to predict emerging trends and identify promising coins
@@ -34,7 +36,7 @@ ZoraSage is an AI-driven platform that helps creators maximize their earnings an
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/zorasage.git
+   git clone https://github.com/kamalbuilds/zorasage.git
    cd zorasage
    ```
 
